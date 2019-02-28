@@ -167,7 +167,7 @@ public class ImagePicker extends CordovaPlugin {
         } else if (resultCode == Activity.RESULT_CANCELED && data != null) {
             String error = data.getStringExtra("ERRORMESSAGE");
             if (error == null) {
-                callbackContext.error("No images selected");
+                callbackContext.success(new JSONArray());
             } else {
                 callbackContext.error(error);
             }
@@ -177,7 +177,7 @@ public class ImagePicker extends CordovaPlugin {
             callbackContext.success(res);
 
         } else {
-            callbackContext.error("No images selected");
+            callbackContext.success(new JSONArray());
         }
 
         imagePickerIntent = null;
