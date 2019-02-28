@@ -39,17 +39,28 @@ typedef enum : NSUInteger {
     PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
     if (status == PHAuthorizationStatusAuthorized) {
         NSLog(@"Access has been granted.");
+
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     } else if (status == PHAuthorizationStatusDenied) {
-        NSLog(@"Access has been denied. Change your setting > this app > Photo enable");
+        NSString* message = @"Access has been denied. Change your setting > this app > Photo enable";
+        NSLog(@"%@", message);
+
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     } else if (status == PHAuthorizationStatusNotDetermined) {
         // Access has not been determined. requestAuthorization: is available
         [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {}];
-    } else if (status == PHAuthorizationStatusRestricted) {
-        NSLog(@"Access has been restricted. Change your setting > Privacy > Photo enable");
-    }
 
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    } else if (status == PHAuthorizationStatusRestricted) {
+        NSString* message = @"Access has been restricted. Change your setting > Privacy > Photo enable";
+        NSLog(@"%@", message);
+
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
 }
 
 - (void) getPictures:(CDVInvokedUrlCommand *)command {
@@ -63,8 +74,8 @@ typedef enum : NSUInteger {
     self.message = [options objectForKey:@"message"];
     BOOL disable_popover = [[options objectForKey:@"disable_popover" ] boolValue];
 
-    if (message == (id)[NSNull null]) {
-      message = nil;
+    if (self.message == (id)[NSNull null]) {
+      self.message = nil;
     }
     self.width = [[options objectForKey:@"width"] integerValue];
     self.height = [[options objectForKey:@"height"] integerValue];
@@ -243,6 +254,26 @@ typedef enum : NSUInteger {
     [self.commandDelegate sendPluginResult:result callbackId:self.callbackId];
 }
 
+- (NSString*)createDirectory:(NSString*)dir
+{
+    BOOL isDir = FALSE;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    BOOL isDirExist = [fileManager fileExistsAtPath:dir isDirectory:&isDir];
+
+    //If dir is not exist, create it
+    if(!(isDirExist && isDir))
+    {
+        BOOL bCreateDir =[[NSFileManager defaultManager] createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:nil];
+        if (bCreateDir == NO)
+        {
+            NSLog(@"Failed to create Directory:%@", dir);
+            return nil;
+        }
+    }
+
+    return dir;
+}
+
 - (NSString *)applicationDocumentsDirectory
 {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -269,8 +300,7 @@ typedef enum : NSUInteger {
             NSString *filePath = [[docsPath stringByAppendingString:@"/"] stringByAppendingString:file];
             NSLog(@"Deleting file at %@", filePath);
             NSError* err = nil;
-            [localFileManager removeItemAtPath:filePath
-                                         error:&err];
+            [localFileManager removeItemAtPath:filePath error:&err];
             if(err) {
                 NSLog(@"Delete returned error: %@", [err localizedDescription]);
             }
@@ -301,11 +331,12 @@ typedef enum : NSUInteger {
 //Optional implementation:
 -(void)assetsPickerControllerDidCancel:(GMImagePickerController *)picker
 {
-    CDVPluginResult* pluginResult = nil;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"User canceled"];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-
-    NSLog(@"GMImagePicker: User pressed cancel button");
+   CDVPluginResult* pluginResult = nil;
+   NSArray* emptyArray = [NSArray array];
+   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:emptyArray];
+   [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+   [picker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+   NSLog(@"GMImagePicker: User pressed cancel button");
 }
 
 

@@ -28,7 +28,7 @@
  *
  */
 
-package com.rolamix;
+package com.synconset;
 
 import java.net.URI;
 import java.io.ByteArrayOutputStream;
@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.rolamix.FakeR;
+import com.synconset.FakeR;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
@@ -320,7 +320,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
             progress.dismiss();
             finish();
         } else {
-	        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR); //prevent orientation changes during processing
+            setRequestedOrientation(getResources().getConfiguration().orientation); //prevent orientation changes during processing
             new ResizeImagesTask().execute(fileNames.entrySet());
         }
     }

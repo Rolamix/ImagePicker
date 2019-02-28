@@ -4,7 +4,6 @@
  *
  * Developed by Wymsee for Sync OnSet
  * Maintained by Telerik
- * Forked by Rolamix to enable cordova-android>6 permissions model.
  */
 
 var ImagePicker = function() {
@@ -30,8 +29,8 @@ ImagePicker.prototype.hasReadPermission = function(callback) {
   return cordova.exec(callback, null, "ImagePicker", "hasReadPermission", []);
 };
 
-ImagePicker.prototype.requestReadPermission = function(callback) {
-  return cordova.exec(callback, null, "ImagePicker", "requestReadPermission", []);
+ImagePicker.prototype.requestReadPermission = function(callback, failureCallback) {
+  return cordova.exec(callback, failureCallback, "ImagePicker", "requestReadPermission", []);
 };
 
 /**
